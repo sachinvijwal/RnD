@@ -19,35 +19,6 @@ namespace ConsoleApplication1
 {
     class Program
     {
-        public static double CalculateAmountForPoints()
-        {
-            int balancePoints = 9670;
-            double balancePointsAmount = 0;
-            if (balancePoints > 0)
-            {
-                int PointsForCashValue = 100;
-                int CashValuePerPoints = 20;
-                bool IsPointsRedeemInMultiple = true;
-                int PointsRedeemInMultiples = 10;
-                if (IsPointsRedeemInMultiple)
-                {
-                    int MultCnt = (int)Math.Truncate((Convert.ToDouble(balancePoints) / PointsRedeemInMultiples));
-                    //Re-calculating points according to PointsRedeemInMultiples setting 
-                    balancePoints = (PointsRedeemInMultiples * MultCnt);
-                    balancePointsAmount = Convert.ToDouble(((Convert.ToDouble(balancePoints) / PointsForCashValue) * CashValuePerPoints));
-                }
-                else
-                {
-                    double pointsForAmount = Convert.ToDouble(balancePoints) / PointsForCashValue;
-                    balancePointsAmount = Convert.ToDouble(pointsForAmount * CashValuePerPoints);
-                }
-            }
-
-            Console.WriteLine("Amount - " + balancePointsAmount);
-
-            return balancePointsAmount;
-        }
-
         #region parallel for async c# - example 1
 
         public static void StartThreadEx1()
@@ -332,8 +303,6 @@ namespace ConsoleApplication1
                 try
                 {
 
-                    CalculateAmountForPoints();
-
                     //var numbers = new Col::List<int> { 1, 2, 3 };
 
                     //string mailBody = "DFDSA aaa dfsf sdf bbb fdsf dasf ccc";
@@ -512,7 +481,7 @@ namespace ConsoleApplication1
 
         static void Execute(string fromEmail, string fromName)
         {
-            string apiKey = "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";
+            string apiKey = "fdfdfsdfdsf";
             var client = new SendGridClient(apiKey);
             var from = new EmailAddress(fromEmail, fromName);
             var subject = fromName;
