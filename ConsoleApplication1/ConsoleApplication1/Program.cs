@@ -13,183 +13,232 @@ using System.Net;
 using System.Threading;
 using System.Diagnostics;
 using Postal;
+using System.Globalization;
+using Microsoft.SqlServer.Types;
 //using Col = System.Collections.Generic;
 
 namespace ConsoleApplication1
 {
     class Program
     {
-        #region parallel for async c# - example 1
-
-        public static void StartThreadEx1()
-        {
-            var sw = Stopwatch.StartNew();
-            Console.WriteLine("Waiting for all tasks to complete");
-            RunWorkers().Wait();
-            Console.WriteLine("All tasks completed in " + sw.Elapsed);
-        }
-
-        public static async Task RunWorkers()
-        {
-            await Task.WhenAll(
-                JobDispatcher(6000, "task 1"),
-                JobDispatcher(5000, "task 2"),
-                JobDispatcher(4000, "task 3"),
-                JobDispatcher(3000, "task 4"),
-                JobDispatcher(2000, "task 5"),
-                JobDispatcher(1000, "task 6")
-            );
-        }
-        public static async Task JobDispatcher(int time, string query)
-        {
-            var results = await Task.WhenAll(
-                worker(time, query + ": Subtask 1"),
-                worker(time, query + ": Subtask 2"),
-                worker(time, query + ": Subtask 3")
-            );
-
-            Console.WriteLine(string.Join("\n", results));
-        }
-
-        static async Task<string> worker(int time, string query)
-        {
-            return await Task.Run(() =>
-            {
-                Console.WriteLine("Starting worker " + query);
-                Thread.Sleep(time);
-                Console.WriteLine("Completed worker " + query);
-                return query + ": " + time + ", thread id: " + Thread.CurrentThread.ManagedThreadId;
-            });
-        }
-        #endregion
-
-        #region Run unlimited thread parellel - Example 2
-
-        public static int counter = 0;
-        public static object fileLock = new object();
-        //public static void CallDummyURL()
-        public static async Task CallDummyURL()
-        {
-            //Task.Run(() =>
-            //await Task.Run(() =>
-            //{
-            try
-            {
-                string html = string.Empty;
-                string url = @"https://www.test.com/careers/apply/Pages/index.aspx";
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                request.AutomaticDecompression = DecompressionMethods.GZip;
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (Stream stream = response.GetResponseStream())
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    html = reader.ReadToEnd();
-                }
-                counter++;
-                Console.WriteLine(counter);
-
-                #region WriteLog in File
-
-                //lock (fileLock)
-                //{
-                //    string filePath = @"C:\Temp\WriteLines.txt";
-                //    if (!File.Exists(filePath))
-                //    {
-                //        using (File.Create(filePath)) { }
-                //    }
-                //    System.IO.File.AppendAllText(filePath, counter + "\r\n");
-                //}
-
-                #endregion
-
-                //Thread.Sleep(1000);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            //});
-        }
-        public static bool ParellelEx2()
-        {
-            #region Run unlimited thread
-
-            var sw = Stopwatch.StartNew();
-            Console.WriteLine("Waiting for all tasks to complete");
-            int max = 1000;
-            //List<Task> tasks = new List<Task>();
-            List<Task> tasks = new List<Task>();
-
-            //Parallel.For(0, max, async (i) =>
-            Parallel.For(0, max, (i) =>
-            {
-                //tasks.Add(CallDummyURL());
-                //Task.Run(() => CallDummyURL());
-                new Thread(async () =>
-                {
-                    await CallDummyURL();
-
-                }).Start();
-
-                //Thread.Sleep(3000);
-            });
-            //await CallDummyURL();
-
-            #region trying to join in current thread
-
-            //Task.WaitAll(tasks.ToArray());
-
-            //-------------------- OR --------------------
-
-            //var stopwatch = Stopwatch.StartNew();
-            //// Create an array of Thread references.
-            //Thread[] array = new Thread[tasks.Count];
-            //int i = 0;
-            //foreach (var t in tasks)
-            //{
-            //    // Start the thread with a ThreadStart.
-            //    array[i] = new Thread(new ThreadStart(CallDummyURL()));
-            //    array[i].Start();
-            //    i++;
-            //}
-            //// Join all the threads.
-            //for (i = 0; i < array.Length; i++)
-            //{
-            //    array[i].Join();
-            //}
-            //Console.WriteLine("DONE: {0}", stopwatch.ElapsedMilliseconds);
-
-            #endregion
-
-            if (counter >= max)
-            {
-                Console.WriteLine("All tasks completed in " + sw.Elapsed);
-            }
-
-            #endregion
-
-            return true;
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Singleton pattern
-        /// </summary>
-        public class DBContext { public string ExecuteQuery() { return "SQL DB CONTEXT"; } }
-        public class A
-        {
-            private static DBContext context = null;
-            private A() { }
-            public static DBContext Instance { get { if (context == null) { context = new DBContext(); } return context; } }
-        }
-
         static void Main(string[] args)
         {
+            #region String Compression
+
+            StringBuilder strBulkData = new StringBuilder();
+            for (int i = 0; i < 500; i++)
+                strBulkData.Append("What is Lorem Ipsum? Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
+            byte[] compressedBytes = StringCompression.Zip(strBulkData.ToString());
+            string uncompressedData = StringCompression.Unzip(compressedBytes);
+            Console.WriteLine(uncompressedData);
+
+            StringCompression.StringContentToFile(@"E:\temp_Original.txt", strBulkData.ToString());
+            StringCompression.ByteArrayToFile(@"E:\temp_Compressed.txt", compressedBytes);
+            compressedBytes = StringCompression.GetByteArrayFromFile(@"E:\temp_Compressed.txt");
+            uncompressedData = StringCompression.Unzip(compressedBytes);
+            Console.WriteLine(uncompressedData);
+
+            Console.ReadLine();
+
+            #endregion
+
+            #region Get aspx page list
+
+            List<string> pages = new List<string>();
+
+            pages.Add("HomePage.Master".ToLower());
+            pages.Add("Login.aspx".ToLower());
+            pages.Add("CreateUser.aspx".ToLower());
+            pages.Add("CreateAccount.aspx".ToLower());
+            pages.Add("SearchAccount.aspx".ToLower());
+            pages.Add("DataImportViewStatusNewUI.aspx".ToLower());
+            pages.Add("MyQuote.aspx".ToLower());
+            pages.Add("CreateQuote.aspx".ToLower());
+            pages.Add("CreateMultiQuote.aspx".ToLower());
+            pages.Add("AttendeeCrossChecks.aspx".ToLower());
+            pages.Add("LeadManagement.aspx".ToLower());
+            pages.Add("CreateLead.aspx".ToLower());
+            pages.Add("SearchLead.aspx".ToLower());
+            pages.Add("SearchContacts.aspx".ToLower());
+            pages.Add("CreateContacts.aspx".ToLower());
+            pages.Add("BulkEmailHistory.aspx".ToLower());
+            pages.Add("SearchEvents.aspx".ToLower());
+            pages.Add("CreateEvents.aspx".ToLower());
+            pages.Add("BanquetCheck.aspx".ToLower());
+            pages.Add("SmallHotel_Report.aspx".ToLower());
+            pages.Add("WebBooking.aspx".ToLower());
+            pages.Add("UploadRecords.aspx".ToLower());
+            pages.Add("PMSSettings.aspx".ToLower());
+            pages.Add("UploadHistory.aspx".ToLower());
+            pages.Add("AllReport.aspx".ToLower());
+            pages.Add("CalendarReport.aspx".ToLower());
+            pages.Add("FunctionDiary.aspx".ToLower());
+            pages.Add("PaceReport.aspx".ToLower());
+            pages.Add("SalesTrackReport.aspx".ToLower());
+            pages.Add("CreateTask.aspx".ToLower());
+            pages.Add("ViewTasks.aspx".ToLower());
+            pages.Add("ImportDataNewUI.aspx".ToLower());
+            pages.Add("OnBoardingMain.aspx".ToLower());
+            pages.Add("RoomTypes.aspx".ToLower());
+            pages.Add("LeadsMapping.aspx".ToLower());
+            pages.Add("LeadSources.aspx".ToLower());
+            pages.Add("ConferenceRoomPricing.aspx".ToLower());
+            pages.Add("Rules.aspx".ToLower());
+            pages.Add("SpacequoteSettings.aspx".ToLower());
+            pages.Add("UploadRates.aspx".ToLower());
+            pages.Add("EmailServerSettings.aspx".ToLower());
+            pages.Add("PMSIntegration.aspx".ToLower());
+            pages.Add("GroupReservation.aspx".ToLower());//-- - AngularJs used, Bundles not working properly in it - (changed it working now)
+            pages.Add("SalesTracking.aspx".ToLower());
+            pages.Add("FoodandBeverageSetup.aspx".ToLower());
+            pages.Add("Localization.aspx".ToLower());
+            pages.Add("HotelAddOns.aspx".ToLower());
+            pages.Add("MarketPlaceSetting.aspx".ToLower());
+            pages.Add("MarketPlaceConfiguration.aspx".ToLower());
+            pages.Add("MeetingPackages.aspx".ToLower());
+            pages.Add("LeadsScoring.aspx".ToLower());
+            pages.Add("ConferenceRooms.aspx".ToLower());
+            pages.Add("ConferenceGrouping.aspx".ToLower());
+            pages.Add("RoomQuoteSettings.aspx".ToLower());
+            pages.Add("RoomtoSpaceRatio.aspx".ToLower());
+            pages.Add("ManageUsersNewUI.aspx".ToLower());
+            pages.Add("Templates.aspx".ToLower());
+            pages.Add("TemplatesNew.aspx".ToLower());
+            pages.Add("OverrideRequest.aspx".ToLower());
+            pages.Add("DataImportNewUI.aspx".ToLower());
+            pages.Add("DataImportEditCsvNewUI.aspx".ToLower());
+            pages.Add("AttendeeMobileSettings.aspx".ToLower());// - AngularJs used, Bundles not working properly in it(changed it working now)
+            pages.Add("MenuPackageSettingNewUI.aspx".ToLower());
+            pages.Add("AudioVisualInventory.aspx".ToLower());
+            pages.Add("ManageRegionNewUI.aspx".ToLower());
+            pages.Add("GroupSaleSettings.aspx".ToLower());
+            pages.Add("CompanyAndHotel.aspx".ToLower());
+            pages.Add("Agent_PartnerSettings.aspx".ToLower());
+            pages.Add("SettingWizard.aspx".ToLower());//---------------- No Js and No Css on page
+            pages.Add("Myprofile.aspx".ToLower());
+            pages.Add("GroupBookingNew.aspx".ToLower());
+            pages.Add("WebTemplate.aspx".ToLower());
+            pages.Add("AgencyBooking.aspx".ToLower());
+            pages.Add("AgencySettings.aspx".ToLower());
+            pages.Add("ManageWebsite.aspx".ToLower());
+            pages.Add("ChangesPassword.aspx".ToLower());
+            pages.Add("ManagePermission.aspx".ToLower());
+            pages.Add("ManageUser.aspx".ToLower());
+            pages.Add("EProposals.aspx".ToLower());
+            pages.Add("GenerateContractNew.aspx".ToLower());
+            pages.Add("EProposal.aspx".ToLower());
+            pages.Add("AttendeeMobileNewUI.aspx".ToLower());
+
+
+            string directoryPath = @"E:\Projects\git-repos\GroupRevMax_Web_Production\WebMARDesktopApp\WebMARDesktopApp";
+
+            foreach (string path in Directory.GetFiles(directoryPath, "*.aspx", SearchOption.AllDirectories))
+            {
+                if (pages.Contains(Path.GetFileName(path).ToLower()))
+                    continue;
+
+                string parentDIR = Path.GetDirectoryName(path).Replace(directoryPath, string.Empty);
+                if (!string.IsNullOrEmpty(parentDIR))
+                    parentDIR += " > ";
+
+                Console.WriteLine(parentDIR + Path.GetFileName(path));
+
+                //var fileContent = File.ReadAllText(path);
+                ////if (fileContent.Contains(".js") || fileContent.Contains(".css"))
+                //if (!fileContent.Contains("tinymce.min.js") && fileContent.Contains(".js"))
+                //    Console.WriteLine(Path.GetFileName(path));
+
+            }
+            Console.ReadLine();
+
+            #endregion
+
+
+            GEOGraphy();
+
+
+            string userLanguage = "it-IT";
+            CultureInfo cultureItalian = new CultureInfo(userLanguage);
+            DateTime checkin = DateTime.ParseExact("07/16/2019", cultureItalian.DateTimeFormat.ShortDatePattern, cultureItalian);
+
+            //Random r = new Random();
+            //var a1 = r.Next(1, 500);
+            //var a2 = r.Next(1, 500);
+            //var a3 = r.Next(1, 500);
+            //var a4 = r.Next(1, 500);
+            //var a5 = r.Next(1, 500);
+            //var a6 = r.Next(1, 500);
+            //Console.WriteLine(a1 * a2 * a3 / a4 * a5 * a6);
+            //Console.WriteLine((a1 * a2 * a3) / a4 * a5 * a6);
+            //Console.WriteLine(a1 * a2 * (a3 / a4 * a5 * a6));
+            //Console.ReadLine();
+
+            //int i = 1;
+            //while (true)
+            //{
+            //    try
+            //    {
+            //        string address = "Chennai";
+            //        LatLong objLatLong = new GEOLocation(address).LatLong;
+
+            //        Console.WriteLine(i++ + ". " + objLatLong.Latitude + "," + objLatLong.Longitude);
+
+            //        Thread.Sleep(500);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine(ex.Message);
+            //        break;
+            //    }
+            //}
+            //Console.ReadLine();
+            //return;
+
+
+
+
+            //use any european culture
+            var cultureInfo = CultureInfo.GetCultureInfo("it-IT");
+            Console.WriteLine(String.Format(cultureInfo, "{0:C}", 1000.77));
+
+            double amount = 24201.78;
+            string currencyCode = "EUR";
+            string result = string.Empty;
+            CultureInfo[] _cultures = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
+            Func<int, RegionInfo> GetRegion = (int cultureId) => { try { return new RegionInfo(cultureId); } catch { return null; } };
+            var cultures = (from c in _cultures
+                            let region = GetRegion(c.LCID)
+                            where region != null && region.ISOCurrencySymbol.ToUpper() == currencyCode.ToUpper()
+                            select c).ToList();
+            var culture = (from c in _cultures
+                           let r1 = GetRegion(c.LCID)
+                           where r1 != null && r1.ISOCurrencySymbol.ToUpper() == currencyCode.ToUpper()
+                           select c).FirstOrDefault();
+            if (culture == null)
+                result = amount.ToString("0.00");
+            result = string.Format(culture, "{0:C}", amount);
+
+
+
+            test t = new ConsoleApplication1.Program.test();
+            Console.WriteLine(t.GetData());
+
+            test t1 = new ConsoleApplication1.Program.test();
+            Console.WriteLine(t1.GetData());
+
+            Example a = new ConsoleApplication1.Program.Example();
+
+            IInterface1 objHelloWorld1 = new ConsoleApplication1.Program.Example();
+            objHelloWorld1.test();
+            IInterface2 objHelloWorld2 = new ConsoleApplication1.Program.Example();
+            objHelloWorld2.test();
+
             //Calling
             Console.WriteLine(A.Instance.ExecuteQuery());
             Console.WriteLine(A.Instance.ExecuteQuery());
 
+            //A a = new ConsoleApplication1.Program.A();
+            //Console.WriteLine(a.GetInstance().ExecuteQuery());
 
             StringBuilder sb = new StringBuilder();
 
@@ -435,6 +484,224 @@ namespace ConsoleApplication1
             Console.ReadKey();
         }
 
+        #region parallel for async c# - example 1
+
+        public static void StartThreadEx1()
+        {
+            var sw = Stopwatch.StartNew();
+            Console.WriteLine("Waiting for all tasks to complete");
+            RunWorkers().Wait();
+            Console.WriteLine("All tasks completed in " + sw.Elapsed);
+        }
+
+        public static async Task RunWorkers()
+        {
+            await Task.WhenAll(
+                JobDispatcher(6000, "task 1"),
+                JobDispatcher(5000, "task 2"),
+                JobDispatcher(4000, "task 3"),
+                JobDispatcher(3000, "task 4"),
+                JobDispatcher(2000, "task 5"),
+                JobDispatcher(1000, "task 6")
+            );
+        }
+        public static async Task JobDispatcher(int time, string query)
+        {
+            var results = await Task.WhenAll(
+                worker(time, query + ": Subtask 1"),
+                worker(time, query + ": Subtask 2"),
+                worker(time, query + ": Subtask 3")
+            );
+
+            Console.WriteLine(string.Join("\n", results));
+        }
+
+        static async Task<string> worker(int time, string query)
+        {
+            return await Task.Run(() =>
+            {
+                Console.WriteLine("Starting worker " + query);
+                Thread.Sleep(time);
+                Console.WriteLine("Completed worker " + query);
+                return query + ": " + time + ", thread id: " + Thread.CurrentThread.ManagedThreadId;
+            });
+        }
+        #endregion
+
+        #region Run unlimited thread parellel - Example 2
+
+        public static int counter = 0;
+        public static object fileLock = new object();
+        //public static void CallDummyURL()
+        public static async Task CallDummyURL()
+        {
+            //Task.Run(() =>
+            //await Task.Run(() =>
+            //{
+            try
+            {
+                string html = string.Empty;
+                string url = @"https://www.test.com/careers/apply/Pages/index.aspx";
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.AutomaticDecompression = DecompressionMethods.GZip;
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    html = reader.ReadToEnd();
+                }
+                counter++;
+                Console.WriteLine(counter);
+
+                #region WriteLog in File
+
+                //lock (fileLock)
+                //{
+                //    string filePath = @"C:\Temp\WriteLines.txt";
+                //    if (!File.Exists(filePath))
+                //    {
+                //        using (File.Create(filePath)) { }
+                //    }
+                //    System.IO.File.AppendAllText(filePath, counter + "\r\n");
+                //}
+
+                #endregion
+
+                //Thread.Sleep(1000);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            //});
+        }
+        public static bool ParellelEx2()
+        {
+            #region Run unlimited thread
+
+            var sw = Stopwatch.StartNew();
+            Console.WriteLine("Waiting for all tasks to complete");
+            int max = 1000;
+            //List<Task> tasks = new List<Task>();
+            List<Task> tasks = new List<Task>();
+
+            //Parallel.For(0, max, async (i) =>
+            Parallel.For(0, max, (i) =>
+            {
+                //tasks.Add(CallDummyURL());
+                //Task.Run(() => CallDummyURL());
+                new Thread(async () =>
+                {
+                    await CallDummyURL();
+
+                }).Start();
+
+                //Thread.Sleep(3000);
+            });
+            //await CallDummyURL();
+
+            #region trying to join in current thread
+
+            //Task.WaitAll(tasks.ToArray());
+
+            //-------------------- OR --------------------
+
+            //var stopwatch = Stopwatch.StartNew();
+            //// Create an array of Thread references.
+            //Thread[] array = new Thread[tasks.Count];
+            //int i = 0;
+            //foreach (var t in tasks)
+            //{
+            //    // Start the thread with a ThreadStart.
+            //    array[i] = new Thread(new ThreadStart(CallDummyURL()));
+            //    array[i].Start();
+            //    i++;
+            //}
+            //// Join all the threads.
+            //for (i = 0; i < array.Length; i++)
+            //{
+            //    array[i].Join();
+            //}
+            //Console.WriteLine("DONE: {0}", stopwatch.ElapsedMilliseconds);
+
+            #endregion
+
+            if (counter >= max)
+            {
+                Console.WriteLine("All tasks completed in " + sw.Elapsed);
+            }
+
+            #endregion
+
+            return true;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Singleton pattern
+        /// </summary>
+        public class DBContext { public string ExecuteQuery() { return "SQL DB CONTEXT"; } }
+        public class A
+        {
+            private static DBContext context = null;
+            //private A() { }
+            public static DBContext Instance { get { if (context == null) { context = new DBContext(); } return context; } }
+
+            public DBContext GetInstance() { return context; }
+        }
+
+        private interface IInterface1 { void test(); }
+        private interface IInterface2 { void test(); }
+        public class Example : IInterface1, IInterface2
+        {
+            public void test()
+            {
+                Console.WriteLine("test 1");
+            }
+        }
+
+        public class test
+        {
+            static int aaa;
+            static test()
+            {
+                aaa++;
+            }
+            //private test()
+            //{
+
+            //}
+            public int GetData()
+            {
+                return aaa;
+            }
+        }
+
+        //protected class AbstractClassEx
+        //{
+        //}
+
+        //class AbstractClassEx1
+        //{
+        //    public void GetName()
+        //    {
+        //        Console.WriteLine("AbstractClassEx1");
+        //    }
+        //}
+        //abstract class AbstractClassEx2 : AbstractClassEx1
+        //{
+        //    public new void GetName()
+        //    {
+        //        this.GetName();
+        //    }
+        //}
+
+        //public class AbstractDerivedClass : AbstractClassEx
+        //{
+        //}
+
+
         public static string GetDomain(string sURL)
         {
             string result = string.Empty;
@@ -673,6 +940,72 @@ namespace ConsoleApplication1
         //    }
         //}
 
+        #region GEOGraphy
+
+        public static void GEOGraphy()
+        {
+            double earthRadius = 6378137; // meters => from both nad83 & wgs84
+            var a = new { lat = 12.9715987, lng = 77.5945627 };
+            var b = new { lat = 12.9894459, lng = 77.5949382 };
+
+            // sql geography lib
+            SqlGeographyBuilder sgb;
+            sgb = new SqlGeographyBuilder();
+            sgb.SetSrid(4326);
+            sgb.BeginGeography(OpenGisGeographyType.Point);
+            sgb.BeginFigure(a.lat, a.lng);
+            sgb.EndFigure();
+            sgb.EndGeography();
+            SqlGeography geoA = sgb.ConstructedGeography;
+
+            sgb = new SqlGeographyBuilder();
+            sgb.SetSrid(4326);
+            sgb.BeginGeography(OpenGisGeographyType.Point);
+            sgb.BeginFigure(b.lat, b.lng);
+            sgb.EndFigure();
+            sgb.EndGeography();
+            SqlGeography geoB = sgb.ConstructedGeography;
+
+            // distance cast from SqlDouble
+            double geoDistance = (double)geoA.STDistance(geoB);
+
+            // math!
+            double d2r = Math.PI / 180; // for converting degrees to radians
+            double lat1 = a.lat * d2r,
+                lat2 = b.lat * d2r,
+                lng1 = a.lng * d2r,
+                lng2 = b.lng * d2r,
+                dLat = lat2 - lat1,
+                dLng = lng2 - lng1,
+                sin_dLat_half = Math.Pow(Math.Sin(dLat / 2), 2),
+                sin_dLng_half = Math.Pow(Math.Sin(dLng / 2), 2),
+                distance = sin_dLat_half + Math.Cos(lat1) * Math.Cos(lat2) * sin_dLng_half;
+
+            // math distance
+            double mathDistance = (2 * Math.Atan2(Math.Sqrt(distance), Math.Sqrt(1 - distance))) * earthRadius;
+
+            // haversine
+            double sLat1 = Math.Sin(a.lat * d2r),
+                    sLat2 = Math.Sin(b.lat * d2r),
+                    cLat1 = Math.Cos(a.lat * d2r),
+                    cLat2 = Math.Cos(b.lat * d2r),
+                    cLon = Math.Cos((a.lng * d2r) - (b.lng * d2r)),
+                    cosD = sLat1 * sLat2 + cLat1 * cLat2 * cLon,
+                    d = Math.Acos(cosD);
+
+            // math distance
+            double methDistance = d * earthRadius;
+
+
+            // write the outputs
+            Console.WriteLine("geo distance:\t" + geoDistance / 1000);    // 1422.99560435875
+            Console.WriteLine("math distance:\t" + mathDistance / 1000);  // 1421.73656776243
+            Console.WriteLine("meth distance:\t" + methDistance / 1000);  // 1421.73656680185
+            Console.WriteLine("geo vs math:\t" + (geoDistance - mathDistance) / 1000);     // 1.25903659632445
+            Console.WriteLine("haversine vs math:\t" + (methDistance - methDistance) / 1000); // ~0.00000096058011
+        }
+
+        #endregion
     }
 
     public static class URLExtensions
