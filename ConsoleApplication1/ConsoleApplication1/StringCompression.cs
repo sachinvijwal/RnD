@@ -108,5 +108,17 @@ namespace ConsoleApplication1
             }
         }
 
+        public static void DeleteFile(string fileName)
+        {
+            try
+            {
+                File.Delete(fileName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception caught in process: {0}", ex);
+            }
+        }
+
     }
 }
