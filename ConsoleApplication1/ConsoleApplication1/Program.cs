@@ -23,57 +23,137 @@ namespace ConsoleApplication1
     {
         static void Main(string[] args)
         {
+            int caseNo = 99;
+            switch (caseNo)
+            {
+                case 100:
+                   
+                    #region CASE 100
+
+                    string filepath = @"E:\Projects\git-repos\GroupRevMax_Web_Production\WebMARDesktopApp\WebMARDesktopApp\ClientSideJavascripts\SearchEvents.js";
+                    var fileLines = File.ReadAllLines(filepath);
+
+                    List<string> l1 = new List<string>();
+                    int diff1 = 9249 - 9186;
+                    for (int i = 9186; i < 9249; i++)
+                    {
+                        if (!string.IsNullOrWhiteSpace(fileLines[i].Trim()))
+                            l1.Add(fileLines[i].Trim());
+                    }
+                    List<string> l2 = new List<string>();
+                    int diff2 = 9288 + diff1;
+                    for (int i = 9288; i < diff2; i++)
+                    {
+                        if (!string.IsNullOrWhiteSpace(fileLines[i].Trim()))
+                            l2.Add(fileLines[i].Trim());
+                    }
+
+                    List<string> l3 = new List<string>();
+                    int diff3 = 9506 + diff1;
+                    for (int i = 9506; i < diff3; i++)
+                    {
+                        if (!string.IsNullOrWhiteSpace(fileLines[i].Trim()))
+                            l3.Add(fileLines[i].Trim());
+                    }
+
+                    int index = 0;
+                    foreach (var line in l1)
+                    {
+                        if (line.IndexOf(l2[index], StringComparison.OrdinalIgnoreCase) < 0)
+                            Console.WriteLine("Un-Matched Line found : " + line);
+
+                        if (line.IndexOf(l3[index], StringComparison.OrdinalIgnoreCase) < 0)
+                            Console.WriteLine("Un-Matched Line found : " + line);
+                        index++;
+                    }
+
+                    Console.WriteLine("Matched Done");
+                    Console.ReadLine();
+
+                    #endregion
+
+                    break;
+
+                case 99:
+                   
+                    #region CASE 99
+
+                    string password = "_encrypt";
+                    Console.WriteLine("Please enter a string to encrypt:");
+                    string plaintext = Console.ReadLine();
+                    Console.WriteLine("");
+
+                    Console.WriteLine("Your encrypted string is:");
+                    string encryptedstring = StringCipher.Encrypt(plaintext, password);
+                    Console.WriteLine(encryptedstring);
+                    Console.WriteLine("");
+
+                    Console.WriteLine("Your decrypted string is:");
+                    string decryptedstring = StringCipher.Decrypt(encryptedstring, password);
+                    Console.WriteLine(decryptedstring);
+                    Console.WriteLine("");
+
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadLine();
+
+                    #endregion
+
+                    break;
+                default:
+                    break;
+            }
+            return;
 
             #region String Compression
 
-            ///https://rawgit.com/nodeca/pako/master/dist/pako.js
-            ///Ex1 - http://jsfiddle.net/9yH7M/1/
-            ///Ex2 - http://jsfiddle.net/9yH7M/
+            /////https://rawgit.com/nodeca/pako/master/dist/pako.js
+            /////Ex1 - http://jsfiddle.net/9yH7M/1/
+            /////Ex2 - http://jsfiddle.net/9yH7M/
 
 
-            List<string> l1 = new List<string>() { "1", "2" };
-            List<string> l2 = new List<string>() { "2", "3" };
-            List<string> l3 = new List<string>() { "3", "4" };
-            List<string> l4 = new List<string>() { "5", "6" };
-            //var final = l1.Union(l2).Union(l3).Union(l4).ToList();
-            var final = l1.Union(l4).Union(l3).Union(l2).ToList();
-            l1.AddRange(l4);
-            l1.AddRange(l3);
-            l1.AddRange(l2);
-            var final1 = l1.Distinct().ToList();
+            //List<string> l1 = new List<string>() { "1", "2" };
+            //List<string> l2 = new List<string>() { "2", "3" };
+            //List<string> l3 = new List<string>() { "3", "4" };
+            //List<string> l4 = new List<string>() { "5", "6" };
+            ////var final = l1.Union(l2).Union(l3).Union(l4).ToList();
+            //var final = l1.Union(l4).Union(l3).Union(l2).ToList();
+            //l1.AddRange(l4);
+            //l1.AddRange(l3);
+            //l1.AddRange(l2);
+            //var final1 = l1.Distinct().ToList();
 
-            StringBuilder bulkData = new StringBuilder();
-            for (int i = 0; i < 500; i++)
-                bulkData.Append("What is Lorem Ipsum? Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
-            byte[] compressedBytes = StringCompression.Zip(bulkData.ToString());
-            string uncompressedData = StringCompression.Unzip(compressedBytes);
+            //StringBuilder bulkData = new StringBuilder();
+            //for (int i = 0; i < 500; i++)
+            //    bulkData.Append("What is Lorem Ipsum? Lorem Ipsum is simply dummy text of the printing and typesetting industry.Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
+            //byte[] compressedBytes = StringCompression.Zip(bulkData.ToString());
+            //string uncompressedData = StringCompression.Unzip(compressedBytes);
 
-            //string e = Base64Conversions.EncodeBase64(bulkData.ToString());
-            //string d = Base64Conversions.DecodeBase64(e);
+            ////string e = Base64Conversions.EncodeBase64(bulkData.ToString());
+            ////string d = Base64Conversions.DecodeBase64(e);
 
-            Console.WriteLine("Compressed Bytes Length:" + compressedBytes.Length + " bytes");
-            Console.WriteLine("Compressed KB Length:" + (Convert.ToDouble(compressedBytes.Length) / 1000) + " KB");
-            Console.WriteLine("Uncompressed Bytes Length:" + uncompressedData.Length + " bytes");
-            Console.WriteLine("Uncompressed KB Length:" + (Convert.ToDouble(uncompressedData.Length) / 1000) + " KB");
+            //Console.WriteLine("Compressed Bytes Length:" + compressedBytes.Length + " bytes");
+            //Console.WriteLine("Compressed KB Length:" + (Convert.ToDouble(compressedBytes.Length) / 1000) + " KB");
+            //Console.WriteLine("Uncompressed Bytes Length:" + uncompressedData.Length + " bytes");
+            //Console.WriteLine("Uncompressed KB Length:" + (Convert.ToDouble(uncompressedData.Length) / 1000) + " KB");
 
-            Console.WriteLine();
+            //Console.WriteLine();
 
-            StringCompression.StringContentToFile(@"E:\temp_Original.txt", bulkData.ToString());
-            StringCompression.ByteArrayToFile(@"E:\temp_Compressed.txt", compressedBytes);
-            compressedBytes = StringCompression.GetByteArrayFromFile(@"E:\temp_Compressed.txt");
-            uncompressedData = StringCompression.Unzip(compressedBytes);
+            //StringCompression.StringContentToFile(@"E:\temp_Original.txt", bulkData.ToString());
+            //StringCompression.ByteArrayToFile(@"E:\temp_Compressed.txt", compressedBytes);
+            //compressedBytes = StringCompression.GetByteArrayFromFile(@"E:\temp_Compressed.txt");
+            //uncompressedData = StringCompression.Unzip(compressedBytes);
 
-            Console.WriteLine("Compressed Bytes Length:" + compressedBytes.Length + " bytes");
-            Console.WriteLine("Compressed KB Length:" + (Convert.ToDouble(compressedBytes.Length) / 1000) + " KB");
-            Console.WriteLine("Uncompressed Bytes Length:" + uncompressedData.Length + " bytes");
-            Console.WriteLine("Uncompressed KB Length:" + (Convert.ToDouble(uncompressedData.Length) / 1000) + " KB");
+            //Console.WriteLine("Compressed Bytes Length:" + compressedBytes.Length + " bytes");
+            //Console.WriteLine("Compressed KB Length:" + (Convert.ToDouble(compressedBytes.Length) / 1000) + " KB");
+            //Console.WriteLine("Uncompressed Bytes Length:" + uncompressedData.Length + " bytes");
+            //Console.WriteLine("Uncompressed KB Length:" + (Convert.ToDouble(uncompressedData.Length) / 1000) + " KB");
 
-            Console.ReadLine();
+            //Console.ReadLine();
 
-            StringCompression.DeleteFile(@"E:\temp_Original.txt");
-            StringCompression.DeleteFile(@"E:\temp_Compressed.txt");
+            //StringCompression.DeleteFile(@"E:\temp_Original.txt");
+            //StringCompression.DeleteFile(@"E:\temp_Compressed.txt");
 
-            return;
+            //return;
 
             #endregion
 
@@ -172,16 +252,15 @@ namespace ConsoleApplication1
                 if (pages.Contains(Path.GetFileName(path).ToLower()))
                     continue;
 
-                string parentDIR = Path.GetDirectoryName(path).Replace(directoryPath, string.Empty);
-                if (!string.IsNullOrEmpty(parentDIR))
-                    parentDIR += " > ";
+                //string parentDIR = Path.GetDirectoryName(path).Replace(directoryPath, string.Empty);
+                //if (!string.IsNullOrEmpty(parentDIR))
+                //    parentDIR += " > ";
+                //Console.WriteLine(parentDIR + Path.GetFileName(path));
 
-                Console.WriteLine(parentDIR + Path.GetFileName(path));
-
-                //var fileContent = File.ReadAllText(path);
-                ////if (fileContent.Contains(".js") || fileContent.Contains(".css"))
-                //if (!fileContent.Contains("tinymce.min.js") && fileContent.Contains(".js"))
-                //    Console.WriteLine(Path.GetFileName(path));
+                var fileContent = File.ReadAllText(path).ToLower();
+                //if (fileContent.Contains(".js") || fileContent.Contains(".css"))
+                if (!fileContent.Contains("tinymce.min.js") && fileContent.Contains(".js") && fileContent.Contains("HomePage.Master"))
+                    Console.WriteLine(Path.GetFileName(path));
 
             }
             Console.ReadLine();
